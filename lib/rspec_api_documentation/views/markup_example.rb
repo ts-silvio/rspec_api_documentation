@@ -46,6 +46,7 @@ module RspecApiDocumentation
       def requests
         super.map do |hash|
           hash[:request_headers_text] = format_hash(hash[:request_headers])
+          hash[:request_body_pretty] = prettify_json(hash[:request_body])
           hash[:request_query_parameters_text] = format_hash(hash[:request_query_parameters])
           hash[:response_headers_text] = format_hash(hash[:response_headers])
           hash[:response_body_pretty] = prettify_json(hash[:response_body])
@@ -71,7 +72,7 @@ module RspecApiDocumentation
         obj = JSON.parse(string)
         JSON.pretty_unparse(obj)
       end
-      
+
       def format_hash(hash = {})
         return nil unless hash.present?
         hash.collect do |k, v|
