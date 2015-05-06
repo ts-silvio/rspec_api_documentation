@@ -31,10 +31,10 @@ module RspecApiDocumentation
       def requests
         super.map do |hash|
           hash[:request_headers_text] = format_hash(hash[:request_headers])
-          hash[:request_body_pretty] = prettify_json(hash[:request_body])
+          hash[:request_body_pretty] = prettify_json(hash[:request_body], hash[:request_path]) if hash[:request_body]
           hash[:request_query_parameters_text] = format_hash(hash[:request_query_parameters])
           hash[:response_headers_text] = format_hash(hash[:response_headers])
-          hash[:response_body_pretty] = prettify_json(hash[:response_body])
+          hash[:response_body_pretty] = prettify_json(hash[:response_body], hash[:request_path])
           if @host
             if hash[:curl].is_a? RspecApiDocumentation::Curl
               hash[:curl] = hash[:curl].output(@host, @filter_headers)
@@ -52,8 +52,14 @@ module RspecApiDocumentation
 
       private
 
-      def prettify_json(string)
-        return unless string and string != ' '
+      def prettify_json(string, path)
+        return unless string
+        return string if string == ' '
+        if !string.include? '{'
+          p "Weirdness inside #{path}"
+          p "#{string} was send as body, seems wrong bc no valid json"
+          return string
+        end
         obj = JSON.parse(string)
         JSON.pretty_unparse(obj)
       end
